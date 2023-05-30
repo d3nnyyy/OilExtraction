@@ -7,6 +7,7 @@ import ua.lviv.iot.algo.part1.term.OilExtraction.helpers.FilePathManager;
 import ua.lviv.iot.algo.part1.term.OilExtraction.models.Entity;
 import ua.lviv.iot.algo.part1.term.OilExtraction.models.Rig;
 import ua.lviv.iot.algo.part1.term.OilExtraction.fileManagers.EntityWriter;
+import ua.lviv.iot.algo.part1.term.OilExtraction.models.Tanker;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,8 +66,14 @@ public class RigService {
     public boolean deleteRig(Integer id) {
         Rig rig = getRigById(id);
         if (rig != null) {
+            Set<Tanker> tankers = rig.getTankers();
+            for (Tanker tanker : tankers) {
+                tanker.setRig(null);
+                EntityReader.deleteEntityFromCSV(tanker);
+            }
             rigs.remove(id);
             entitiesMap.get(Rig.class).remove(rig);
+            EntityReader.deleteEntityFromCSV(rig);
             return true;
         } else {
             return false;

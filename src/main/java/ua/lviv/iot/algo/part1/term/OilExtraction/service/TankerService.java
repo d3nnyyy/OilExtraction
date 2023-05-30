@@ -79,6 +79,7 @@ public class TankerService {
         if (tanker!= null) {
             tankers.remove(id);
             entitiesMap.get(Tanker.class).remove(tanker);
+            EntityReader.deleteEntityFromCSV(tanker);
             return true;
         } else {
             return false;

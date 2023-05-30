@@ -141,5 +141,104 @@ public class EntityReader {
         }
         return maxId;
     }
+
+    //    public static void deleteEntityFromCSV(Entity entity) {
+//        try {
+//            List<String> files = getFilesFromDirectory();
+//            for (String file : files) {
+//                Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
+//
+//                if (csvEntityClass == entity.getClass()) {
+//                    Path path = Paths.get(PATH + file);
+//                    List<String> lines = Files.readAllLines(path);
+//                    Iterator<String> iterator = lines.iterator();
+//
+//                    while (iterator.hasNext()) {
+//                        String line = iterator.next();
+//                        String[] values = line.split(";");
+//                        if (values.length > 0 && Integer.parseInt(values[0]) == entity.getId()) {
+//                            iterator.remove();
+//                        }
+//                    }
+//                    Files.write(path, lines);
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    public static void deleteEntityFromCSV(Entity entity) {
+//        List<String> files = getFilesFromDirectory();
+//        for (String file : files) {
+//            Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
+//
+//            if (csvEntityClass == entity.getClass()) {
+//                Path path = Paths.get(PATH + file);
+//                List<String> lines;
+//                try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+//                    lines = new ArrayList<>();
+//                    String line;
+//                    br.readLine();
+//                    while ((line = br.readLine()) != null) {
+//                        String[] values = line.split(";");
+//                        if (values.length > 0 && Integer.parseInt(values[0]) != entity.getId()) {
+//                            lines.add(line);
+//                        }
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    continue;
+//                }
+//
+//                try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toFile()))) {
+//                    for (String line : lines) {
+//                        bw.write(line);
+//                        bw.newLine();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
+
+    public static void deleteEntityFromCSV(Entity entity) {
+        List<String> files = getFilesFromDirectory();
+        for (String file : files) {
+            Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
+
+            if (csvEntityClass == entity.getClass()) {
+                Path path = Paths.get(PATH + file);
+                List<String> lines;
+                String headerLine;
+                try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+                    lines = new ArrayList<>();
+                    headerLine = br.readLine();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        String[] values = line.split(";");
+                        if (values.length > 0 && Integer.parseInt(values[0]) != entity.getId()) {
+                            lines.add(line);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toFile()))) {
+                    bw.write(headerLine);
+                    bw.newLine();
+                    for (String line : lines) {
+                        bw.write(line);
+                        bw.newLine();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
 
