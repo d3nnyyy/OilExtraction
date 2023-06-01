@@ -26,7 +26,7 @@ public class Tanker implements Entity{
     private Rig rig;
 
     @JsonIgnore
-    private int rigId;
+    private Integer rigId;
 
     @Transient
     public int getRigId() {

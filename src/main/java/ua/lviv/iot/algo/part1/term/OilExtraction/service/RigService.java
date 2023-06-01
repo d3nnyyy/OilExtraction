@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class RigService {
 
-    private final Map<Integer, Rig> rigs = new HashMap<>();
     private final Map<Class<? extends Entity>, List<Entity>> entitiesMap;
 
     public RigService() {
@@ -25,15 +24,12 @@ public class RigService {
     private final AtomicInteger idCounter =
             new AtomicInteger(EntityReader.getLastId(Rig.class));
 
-
-
     public List<? extends Entity> getRigs() {
         return new LinkedList<>(entitiesMap.get(Rig.class));
     }
 
     public Rig createRig(final Rig rig) {
         rig.setId(idCounter.incrementAndGet());
-        rigs.put(rig.getId(), rig);
         if (!entitiesMap.containsKey(Rig.class)) {
             entitiesMap.put(Rig.class, new LinkedList<>());
         } else {
@@ -54,9 +50,12 @@ public class RigService {
     }
 
     public Rig updateRig(Integer id, Rig rig) {
-        if (rigs.containsKey(id)) {
+        Rig rigFromDB = getRigById(id);
+        if (rigFromDB != null) {
             rig.setId(id);
-            rigs.put(id, rig);
+            entitiesMap.get(Rig.class).remove(rigFromDB);
+            entitiesMap.get(Rig.class).add(rig);
+            EntityReader.updateEntityInCsv(rig);
             return rig;
         } else {
             return null;
@@ -66,12 +65,6 @@ public class RigService {
     public boolean deleteRig(Integer id) {
         Rig rig = getRigById(id);
         if (rig != null) {
-            Set<Tanker> tankers = rig.getTankers();
-            for (Tanker tanker : tankers) {
-                tanker.setRig(null);
-                EntityReader.deleteEntityFromCSV(tanker);
-            }
-            rigs.remove(id);
             entitiesMap.get(Rig.class).remove(rig);
             EntityReader.deleteEntityFromCSV(rig);
             return true;

@@ -33,6 +33,11 @@ public class TankerController {
                 : tankerService.getTankerById(id);
     }
 
+    @GetMapping(path = "/free")
+    public List<? extends Entity> getFreeTankers() {
+        return tankerService.getFreeTankers();
+    }
+
     @PostMapping(produces = {"application/json"})
     public ResponseEntity<Tanker> createTanker(final @RequestBody Tanker tanker) {
         Tanker createdTanker = tankerService.createTanker(tanker);

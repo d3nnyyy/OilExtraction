@@ -10,7 +10,6 @@ import ua.lviv.iot.algo.part1.term.OilExtraction.models.Tanker;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -19,6 +18,7 @@ import java.util.*;
 public class EntityReader {
 
     private static final String PATH = "src/main/resources/entities/";
+
     public static Map<Class<? extends Entity>, List<Entity>> readEntities() {
         Map<Class<? extends Entity>, List<Entity>> entityMap = new HashMap<>();
 
@@ -57,9 +57,9 @@ public class EntityReader {
     public static List<String> getFilesFromDirectory() {
         File folder = new File(EntityReader.PATH);
         String[] fileNames = folder.list();
+        assert fileNames != null;
         return Arrays.asList(fileNames);
     }
-
 
     private static Class<? extends Entity> getClassByCsvFile(String csvFile) {
         if (csvFile.contains("rig")) {
@@ -103,7 +103,6 @@ public class EntityReader {
         return null;
     }
 
-
     private static Object convertValueToFieldType(String value, Class<?> fieldType) {
         if (fieldType == int.class || fieldType == Integer.class) {
             return Integer.parseInt(value);
@@ -114,6 +113,7 @@ public class EntityReader {
         }
         return value;
     }
+
     public static int getLastId(Class<? extends Entity> entityClass) {
         List<String> files = getFilesFromDirectory();
         int maxId = 0;
@@ -166,18 +166,76 @@ public class EntityReader {
                     continue;
                 }
 
-                try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toFile()))) {
-                    bw.write(headerLine);
-                    bw.newLine();
-                    for (String line : lines) {
-                        bw.write(line);
-                        bw.newLine();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                overwriteCSV(path, lines, headerLine);
             }
         }
     }
+
+    public static void updateEntityInCsv(Entity entity) {
+        List<String> files = getFilesFromDirectory();
+        for (String file : files) {
+            Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
+
+            if (csvEntityClass == entity.getClass()) {
+                Path path = Paths.get(PATH + file);
+                List<String> lines;
+                String headerLine;
+                try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+                    lines = new ArrayList<>();
+                    headerLine = br.readLine();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        String[] values = line.split(";");
+                        if (values.length > 0 && Integer.parseInt(values[0]) != entity.getId()) {
+                            lines.add(line);
+                        } else if (values.length > 0 && Integer.parseInt(values[0]) == entity.getId()) {
+
+                            StringBuilder sb = new StringBuilder();
+
+                            String[] headers = headerLine.split(";");
+                            Field[] fields = entity.getClass().getDeclaredFields();
+                            for (String header : headers) {
+                                for (Field field : fields) {
+                                    field.setAccessible(true);
+                                    if (field.getName().equals(header)) {
+                                        Object value = field.get(entity);
+                                        sb.append(value).append(";");
+                                        break;
+                                    }
+                                }
+                            }
+
+
+                            String updatedLine = sb.toString();
+                            lines.add(updatedLine);
+
+                        }
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    continue;
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+
+                overwriteCSV(path, lines, headerLine);
+            }
+        }
+    }
+
+    private static void overwriteCSV(Path path, List<String> lines, String headerLine) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toFile()))) {
+            bw.write(headerLine);
+            bw.newLine();
+            for (String line : lines) {
+                bw.write(line);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
