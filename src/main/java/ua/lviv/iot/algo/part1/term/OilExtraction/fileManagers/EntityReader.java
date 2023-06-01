@@ -194,12 +194,16 @@ public class EntityReader {
 
                             String[] headers = headerLine.split(";");
                             Field[] fields = entity.getClass().getDeclaredFields();
-                            for (String header : headers) {
+                            for (int i = 0; i < headers.length; i++) {
+                                String header = headers[i];
                                 for (Field field : fields) {
                                     field.setAccessible(true);
                                     if (field.getName().equals(header)) {
                                         Object value = field.get(entity);
-                                        sb.append(value).append(";");
+                                        sb.append(value);
+                                        if (i < headers.length - 1) {
+                                            sb.append(";");
+                                        }
                                         break;
                                     }
                                 }
