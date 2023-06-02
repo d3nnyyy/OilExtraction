@@ -29,8 +29,19 @@ public class TankerService {
     );
 
     public List<? extends Entity> getTankers() {
-        return new LinkedList<>(entitiesMap.get(Tanker.class));
-
+        List<Entity> tankerList = entitiesMap.get(Tanker.class);
+        if (tankerList != null) {
+            for (Entity entity : tankerList) {
+                if (entity instanceof Tanker) {
+                    Tanker tanker = (Tanker) entity;
+                    Rig rig = rigService.getRigById(tanker.getRigId());
+                    if (rig != null) {
+                        tanker.setRig(rig);
+                    }
+                }
+            }
+        }
+        return tankerList;
     }
 
     public Tanker createTanker(final Tanker tanker) {
@@ -66,15 +77,23 @@ public class TankerService {
     public Tanker updateTanker(Integer id, Tanker tanker) {
         Tanker tankerFromDB = getTankerById(id);
         if (tankerFromDB != null) {
+            tanker.setId(id);
+
             entitiesMap.get(Tanker.class).remove(tankerFromDB);
             entitiesMap.get(Tanker.class).add(tanker);
-            tanker.setId(id);
-            tanker.setRig(rigService.getRigById(tanker.getRigId()));
-            if (rigService.getRigById(tanker.getRigId()) == null) {
+
+            Rig rig = rigService.getRigById(tanker.getRigId());
+
+            if (rig == null) {
                 return null;
             }
-            tanker.setRigId(tanker.getRig().getId());
+            rig.getTankers().add(tanker);
+
+            tanker.setRig(rig);
+            tanker.setRigId(rig.getId());
+
             EntityReader.updateEntityInCsv(tanker);
+
             return tanker;
         } else {
             return null;
@@ -83,8 +102,9 @@ public class TankerService {
 
     public boolean deleteTanker(Integer id) {
         Tanker tanker = getTankerById(id);
-        if (tanker!= null) {
+        if (tanker != null) {
             entitiesMap.get(Tanker.class).remove(tanker);
+
             EntityReader.deleteEntityFromCSV(tanker);
             return true;
         } else {
@@ -102,4 +122,6 @@ public class TankerService {
         }
         return freeTankers;
     }
+
 }
+

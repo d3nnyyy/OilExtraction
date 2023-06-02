@@ -1,13 +1,11 @@
 package ua.lviv.iot.algo.part1.term.OilExtraction.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.lviv.iot.algo.part1.term.OilExtraction.fileManagers.EntityReader;
 import ua.lviv.iot.algo.part1.term.OilExtraction.helpers.FilePathManager;
 import ua.lviv.iot.algo.part1.term.OilExtraction.models.Entity;
 import ua.lviv.iot.algo.part1.term.OilExtraction.models.Rig;
 import ua.lviv.iot.algo.part1.term.OilExtraction.fileManagers.EntityWriter;
-import ua.lviv.iot.algo.part1.term.OilExtraction.models.Tanker;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
