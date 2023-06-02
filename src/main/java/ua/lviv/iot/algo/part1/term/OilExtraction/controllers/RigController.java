@@ -18,29 +18,30 @@ public class RigController {
     private final RigService rigService;
 
     @Autowired
-    public RigController(RigService rigService) {
+    public RigController(final RigService rigService) {
         this.rigService = rigService;
     }
 
     @GetMapping
-    public List<? extends Entity> getRigs() {
+    public final List<? extends Entity> getRigs() {
         return new LinkedList<>(rigService.getRigs());
     }
 
     @GetMapping(path = "/{id}")
-    public Object getRigById(final @PathVariable("id") Integer id) {
+    public final Object getRigById(final @PathVariable("id") Integer id) {
         return rigService.getRigById(id) == null
                 ? ResponseEntity.status(HttpStatus.NOT_FOUND).build()
                 : rigService.getRigById(id);
     }
 
     @PostMapping(produces = {"application/json"})
-    public Rig createRig(final @RequestBody Rig rig) {
+    public final Rig createRig(final @RequestBody Rig rig) {
         return rigService.createRig(rig);
     }
 
     @PutMapping(path = "/{id}")
-    public ResponseEntity<Rig> updateRig(final @PathVariable("id") Integer id, final @RequestBody Rig rig) {
+    public final ResponseEntity<Rig> updateRig(final @PathVariable("id") Integer id,
+                                               final @RequestBody Rig rig) {
         Rig updatedRig = rigService.updateRig(id, rig);
         return updatedRig == null
                 ? ResponseEntity.status(HttpStatus.NOT_FOUND).build()
@@ -48,7 +49,7 @@ public class RigController {
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> deleteRig(final @PathVariable("id") Integer id) {
+    public final ResponseEntity<Void> deleteRig(final @PathVariable("id") Integer id) {
         return rigService.deleteRig(id)
                 ? ResponseEntity.status(HttpStatus.OK).build()
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).build();

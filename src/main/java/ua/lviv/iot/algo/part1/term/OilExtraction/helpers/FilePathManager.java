@@ -8,12 +8,12 @@ import java.util.regex.Pattern;
 
 public class FilePathManager {
 
-    public static String getFileName(Entity entity) {
+    public static String getFileName(final Entity entity) {
         final String entityName = entity.getClass().getSimpleName().toLowerCase();
         return "src/main/resources/entities/" + entityName + "-" + DateGetter.getDate() + ".csv";
     }
 
-    public static List<String> getFilesCreatedInThisMonth(List<String> files) {
+    public static List<String> getFilesCreatedInThisMonth(final List<String> files) {
 
         String regex = "^\\w+-" + DateGetter.getMonth() + "-\\d{2}\\.csv$";
         Pattern pattern = Pattern.compile(regex);

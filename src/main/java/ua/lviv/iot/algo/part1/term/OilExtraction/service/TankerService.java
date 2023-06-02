@@ -18,7 +18,7 @@ public class TankerService {
     private final RigService rigService;
 
     @Autowired
-    public TankerService(RigService rigService) {
+    public TankerService(final RigService rigService) {
         this.rigService = rigService;
         this.entitiesMap = EntityReader.readEntities();
     }
@@ -28,7 +28,8 @@ public class TankerService {
             EntityReader.getLastId(Tanker.class)
     );
 
-    public List<? extends Entity> getTankers() {
+    public final List<? extends Entity> getTankers() {
+        System.out.println(entitiesMap.get(Tanker.class));
         List<Entity> tankerList = entitiesMap.get(Tanker.class);
         if (tankerList != null) {
             for (Entity entity : tankerList) {
@@ -44,7 +45,7 @@ public class TankerService {
         return tankerList;
     }
 
-    public Tanker createTanker(final Tanker tanker) {
+    public final Tanker createTanker(final Tanker tanker) {
         String path = FilePathManager.getFileName(tanker);
         Rig rig = rigService.getRigById(tanker.getRigId());
         if (rig != null) {
@@ -64,7 +65,7 @@ public class TankerService {
         }
     }
 
-    public Tanker getTankerById(Integer id) {
+    public final Tanker getTankerById(final Integer id) {
 
         return (Tanker) entitiesMap
                 .get(Tanker.class)
@@ -74,7 +75,7 @@ public class TankerService {
                 .orElse(null);
     }
 
-    public Tanker updateTanker(Integer id, Tanker tanker) {
+    public final Tanker updateTanker(final Integer id, final Tanker tanker) {
         Tanker tankerFromDB = getTankerById(id);
         if (tankerFromDB != null) {
             tanker.setId(id);
@@ -100,7 +101,7 @@ public class TankerService {
         }
     }
 
-    public boolean deleteTanker(Integer id) {
+    public final boolean deleteTanker(final Integer id) {
         Tanker tanker = getTankerById(id);
         if (tanker != null) {
             entitiesMap.get(Tanker.class).remove(tanker);
@@ -112,7 +113,7 @@ public class TankerService {
         }
     }
 
-    public List<? extends Entity> getFreeTankers() {
+    public final List<? extends Entity> getFreeTankers() {
         List<Tanker> tankers = (List<Tanker>) getTankers();
         List<Tanker> freeTankers = new LinkedList<>();
         for (var tanker : tankers) {

@@ -12,7 +12,9 @@ import java.util.List;
 @Setter
 @Getter
 @ToString
-public class Tanker implements Entity{
+public class Tanker implements Entity {
+
+    private static final String HEADERS = "id;capacityInBarrels;currentLoadInBarrels;datesOfDeparture;rigId";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +34,13 @@ public class Tanker implements Entity{
     public int getRigId() {
         return (rig != null) ? rig.getId() : 0;
     }
+
     @JsonIgnore
-    public String getHeaders() {
-        return "id;capacityInBarrels;currentLoadInBarrels;datesOfDeparture;rigId";
+    public final String getHeaders() {
+        return HEADERS;
     }
 
-    public String toCSV() {
+    public final String toCSV() {
         return id + ";"
                 + capacityInBarrels + ";"
                 + currentLoadInBarrels + ";"
