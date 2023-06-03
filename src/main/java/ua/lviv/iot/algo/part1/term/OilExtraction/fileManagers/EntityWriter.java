@@ -9,6 +9,9 @@ public class EntityWriter {
     public static final String LINE_SEPARATOR = System.lineSeparator();
 
     public static <T extends Entity> void writeToCSV(final T entity, final String path) {
+        if (entity == null) {
+            return;
+        }
         try {
             boolean fileExists = new File(path).exists();
 
