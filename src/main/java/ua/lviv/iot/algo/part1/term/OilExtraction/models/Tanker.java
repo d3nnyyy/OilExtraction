@@ -30,9 +30,8 @@ public class Tanker implements Entity {
     @JsonIgnore
     private Integer rigId;
 
-    @Transient
     public int getRigId() {
-        return (rig != null) ? rig.getId() : 0;
+        return (rigId != null) ? rigId : (rig != null ? rig.getId() : 0);
     }
 
     @JsonIgnore

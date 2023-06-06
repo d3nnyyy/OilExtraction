@@ -45,7 +45,7 @@ public class EntityReader {
                     while ((line = br.readLine()) != null) {
                         String[] values = line.split(";");
                         if (values.length == headers.size()) {
-                            Entity entity = createEntity(entityClass, headers, values);
+                            Entity entity = createEntity(entityClass, headers, values, entityMap);
                             entityList.add(entity);
                         }
                     }
@@ -78,7 +78,8 @@ public class EntityReader {
     private static Entity createEntity(
             final Class<? extends Entity> entityClass,
             final List<String> headers,
-            final String[] values) {
+            final String[] values,
+            Map<Class<? extends Entity>, List<Entity>> entityMap) {
         try {
             Constructor<? extends Entity> constructor = entityClass.getDeclaredConstructor();
             Entity entity = constructor.newInstance();
@@ -92,7 +93,31 @@ public class EntityReader {
                 Field field = getFieldByName(fields, header);
                 if (field != null) {
                     field.setAccessible(true);
-                    field.set(entity, convertValueToFieldType(value, field.getType()));
+                    //field.set(entity, convertValueToFieldType(value, field.getType()));
+                    if (field.getName().equals("rigId")) {
+                        if (entity instanceof Tanker) {
+                            int rigId = Integer.parseInt(value);
+                            List<Entity> rigs = entityMap.get(Rig.class);
+                            Rig rig = null;
+                            if (rigs != null) {
+                                for (Entity e : rigs) {
+                                    Rig r = (Rig) e;
+                                    if (r.getId() == rigId) {
+                                        rig = r;
+                                        break;
+                                    }
+                                }
+                            }
+                            field.set(entity, rigId);
+                            Field rigField = getFieldByName(fields, "rig");
+                            if (rigField != null) {
+                                rigField.setAccessible(true);
+                                rigField.set(entity, rig);
+                            }
+                        }
+                    } else {
+                        field.set(entity, convertValueToFieldType(value, field.getType()));
+                    }
                 }
             }
             return entity;

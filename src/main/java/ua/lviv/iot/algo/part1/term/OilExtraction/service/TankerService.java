@@ -29,7 +29,6 @@ public class TankerService {
     );
 
     public final List<? extends Entity> getTankers() {
-        System.out.println(entitiesMap.get(Tanker.class));
         List<Entity> tankerList = entitiesMap.get(Tanker.class);
         if (tankerList != null) {
             for (Entity entity : tankerList) {
@@ -88,6 +87,7 @@ public class TankerService {
             if (rig == null) {
                 return null;
             }
+            rig.getTankers().remove(tankerFromDB);
             rig.getTankers().add(tanker);
 
             tanker.setRig(rig);
