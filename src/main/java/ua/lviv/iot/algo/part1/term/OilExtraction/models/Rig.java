@@ -13,7 +13,9 @@ import java.util.Set;
 @Setter
 @Getter
 @ToString
-public class Rig implements Entity{
+public class Rig implements Entity {
+
+    private static final String HEADERS = "id;longitude;latitude";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,15 +24,15 @@ public class Rig implements Entity{
     private double latitude;
 
     @JsonIgnoreProperties("rig")
-    @OneToMany(mappedBy = "rig", fetch = FetchType.EAGER, cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "rig", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Tanker> tankers = new HashSet<>();
 
     @JsonIgnore
-    public String getHeaders() {
-        return "id;longitude;latitude";
+    public final String getHeaders() {
+        return HEADERS;
     }
 
-    public String toCSV() {
+    public final String toCSV() {
         return id + ";" + longitude + ";" + latitude;
     }
 }

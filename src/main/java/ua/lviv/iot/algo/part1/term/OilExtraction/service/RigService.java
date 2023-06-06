@@ -6,6 +6,7 @@ import ua.lviv.iot.algo.part1.term.OilExtraction.helpers.FilePathManager;
 import ua.lviv.iot.algo.part1.term.OilExtraction.models.Entity;
 import ua.lviv.iot.algo.part1.term.OilExtraction.models.Rig;
 import ua.lviv.iot.algo.part1.term.OilExtraction.fileManagers.EntityWriter;
+import ua.lviv.iot.algo.part1.term.OilExtraction.models.Tanker;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,11 +23,30 @@ public class RigService {
     private final AtomicInteger idCounter =
             new AtomicInteger(EntityReader.getLastId(Rig.class));
 
-    public List<? extends Entity> getRigs() {
-        return new LinkedList<>(entitiesMap.get(Rig.class));
+    public final List<? extends Entity> getRigs() {
+        List<Entity> rigList = entitiesMap.get(Rig.class);
+        if (rigList != null) {
+            for (Entity entity : rigList) {
+                if (entity instanceof Rig) {
+                    Rig rig = (Rig) entity;
+                    Set<Tanker> tankerList = new HashSet<>();
+                    for (Entity tanker : entitiesMap.get(Tanker.class)) {
+                        if (tanker instanceof Tanker) {
+                            Tanker tanker1 = (Tanker) tanker;
+                            if (tanker1.getRigId() == rig.getId()) {
+                                tankerList.add(tanker1);
+                            }
+                        }
+                    }
+                    rig.setTankers(tankerList);
+                }
+            }
+        }
+        return rigList;
     }
 
-    public Rig createRig(final Rig rig) {
+
+    public final Rig createRig(final Rig rig) {
         rig.setId(idCounter.incrementAndGet());
         if (!entitiesMap.containsKey(Rig.class)) {
             entitiesMap.put(Rig.class, new LinkedList<>());
@@ -38,7 +58,7 @@ public class RigService {
         return rig;
     }
 
-    public Rig getRigById(Integer id) {
+    public final Rig getRigById(final Integer id) {
         return (Rig) entitiesMap
                 .get(Rig.class)
                 .stream()
@@ -47,7 +67,7 @@ public class RigService {
                 .orElse(null);
     }
 
-    public Rig updateRig(Integer id, Rig rig) {
+    public final Rig updateRig(final Integer id, final Rig rig) {
         Rig rigFromDB = getRigById(id);
         if (rigFromDB != null) {
             rig.setId(id);
@@ -60,7 +80,7 @@ public class RigService {
         }
     }
 
-    public boolean deleteRig(Integer id) {
+    public final boolean deleteRig(final Integer id) {
         Rig rig = getRigById(id);
         if (rig != null) {
             entitiesMap.get(Rig.class).remove(rig);

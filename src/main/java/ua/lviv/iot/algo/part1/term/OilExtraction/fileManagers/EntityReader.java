@@ -10,6 +10,7 @@ import ua.lviv.iot.algo.part1.term.OilExtraction.models.Tanker;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -23,7 +24,11 @@ public class EntityReader {
         Map<Class<? extends Entity>, List<Entity>> entityMap = new HashMap<>();
 
         for (var csvFile : FilePathManager.getFilesCreatedInThisMonth(getFilesFromDirectory())) {
-            try (BufferedReader br = new BufferedReader(new FileReader(PATH + csvFile))) {
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(PATH + csvFile),
+                            StandardCharsets.UTF_8))) {
+
                 String line = br.readLine();
 
                 if (line == null || line.isEmpty()) {
@@ -40,7 +45,7 @@ public class EntityReader {
                     while ((line = br.readLine()) != null) {
                         String[] values = line.split(";");
                         if (values.length == headers.size()) {
-                            Entity entity = createEntity(entityClass, headers, values);
+                            Entity entity = createEntity(entityClass, headers, values, entityMap);
                             entityList.add(entity);
                         }
                     }
@@ -61,7 +66,7 @@ public class EntityReader {
         return Arrays.asList(fileNames);
     }
 
-    private static Class<? extends Entity> getClassByCsvFile(String csvFile) {
+    private static Class<? extends Entity> getClassByCsvFile(final String csvFile) {
         if (csvFile.contains("rig")) {
             return Rig.class;
         } else if (csvFile.contains("tanker")) {
@@ -70,7 +75,11 @@ public class EntityReader {
         return null;
     }
 
-    private static Entity createEntity(Class<? extends Entity> entityClass, List<String> headers, String[] values) {
+    private static Entity createEntity(
+            final Class<? extends Entity> entityClass,
+            final List<String> headers,
+            final String[] values,
+            Map<Class<? extends Entity>, List<Entity>> entityMap) {
         try {
             Constructor<? extends Entity> constructor = entityClass.getDeclaredConstructor();
             Entity entity = constructor.newInstance();
@@ -84,7 +93,31 @@ public class EntityReader {
                 Field field = getFieldByName(fields, header);
                 if (field != null) {
                     field.setAccessible(true);
-                    field.set(entity, convertValueToFieldType(value, field.getType()));
+                    //field.set(entity, convertValueToFieldType(value, field.getType()));
+                    if (field.getName().equals("rigId")) {
+                        if (entity instanceof Tanker) {
+                            int rigId = Integer.parseInt(value);
+                            List<Entity> rigs = entityMap.get(Rig.class);
+                            Rig rig = null;
+                            if (rigs != null) {
+                                for (Entity e : rigs) {
+                                    Rig r = (Rig) e;
+                                    if (r.getId() == rigId) {
+                                        rig = r;
+                                        break;
+                                    }
+                                }
+                            }
+                            field.set(entity, rigId);
+                            Field rigField = getFieldByName(fields, "rig");
+                            if (rigField != null) {
+                                rigField.setAccessible(true);
+                                rigField.set(entity, rig);
+                            }
+                        }
+                    } else {
+                        field.set(entity, convertValueToFieldType(value, field.getType()));
+                    }
                 }
             }
             return entity;
@@ -94,7 +127,9 @@ public class EntityReader {
         }
     }
 
-    private static Field getFieldByName(Field[] fields, String fileName) {
+    private static Field getFieldByName(
+            final Field[] fields,
+            final String fileName) {
         for (Field field : fields) {
             if (field.getName().equals(fileName)) {
                 return field;
@@ -103,7 +138,9 @@ public class EntityReader {
         return null;
     }
 
-    private static Object convertValueToFieldType(String value, Class<?> fieldType) {
+    private static Object convertValueToFieldType(
+            final String value,
+            final Class<?> fieldType) {
         if (fieldType == int.class || fieldType == Integer.class) {
             return Integer.parseInt(value);
         } else if (fieldType == double.class || fieldType == Double.class) {
@@ -114,14 +151,15 @@ public class EntityReader {
         return value;
     }
 
-    public static int getLastId(Class<? extends Entity> entityClass) {
+    public static int getLastId(final Class<? extends Entity> entityClass) {
         List<String> files = getFilesFromDirectory();
         int maxId = 0;
 
         for (String file : files) {
             Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
 
-            if (csvEntityClass == entityClass) {
+            assert csvEntityClass != null;
+            if (csvEntityClass.equals(entityClass)) {
                 try (BufferedReader br = new BufferedReader(new FileReader(PATH + file))) {
                     String line;
                     br.readLine();
@@ -142,7 +180,7 @@ public class EntityReader {
         return maxId;
     }
 
-    public static void deleteEntityFromCSV(Entity entity) {
+    public static void deleteEntityFromCSV(final Entity entity) {
         List<String> files = getFilesFromDirectory();
         for (String file : files) {
             Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
@@ -151,7 +189,8 @@ public class EntityReader {
                 Path path = Paths.get(PATH + file);
                 List<String> lines;
                 String headerLine;
-                try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8))) {
+
                     lines = new ArrayList<>();
                     headerLine = br.readLine();
                     String line;
@@ -171,7 +210,7 @@ public class EntityReader {
         }
     }
 
-    public static void updateEntityInCsv(Entity entity) {
+    public static void updateEntityInCsv(final Entity entity) {
         List<String> files = getFilesFromDirectory();
         for (String file : files) {
             Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
@@ -180,7 +219,7 @@ public class EntityReader {
                 Path path = Paths.get(PATH + file);
                 List<String> lines;
                 String headerLine;
-                try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8))) {
                     lines = new ArrayList<>();
                     headerLine = br.readLine();
                     String line;
@@ -228,8 +267,10 @@ public class EntityReader {
         }
     }
 
-    private static void overwriteCSV(Path path, List<String> lines, String headerLine) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toFile()))) {
+    private static void overwriteCSV(final Path path,
+                                     final List<String> lines,
+                                     final String headerLine) {
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile()), StandardCharsets.UTF_8))) {
             bw.write(headerLine);
             bw.newLine();
             for (String line : lines) {
