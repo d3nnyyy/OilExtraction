@@ -58,7 +58,7 @@ public class TankerService {
 
     public final Tanker getTankerById(final Integer id) {
         return (Tanker) entitiesMap.getOrDefault(
-                Tanker.class, new ArrayList<>())
+                        Tanker.class, new ArrayList<>())
                 .stream()
                 .filter(tanker -> tanker.getId().equals(id))
                 .findFirst()
@@ -72,15 +72,21 @@ public class TankerService {
             entitiesMap.get(Tanker.class).remove(tankerFromDB);
             entitiesMap.get(Tanker.class).add(tanker);
 
-            Rig rig = rigService.getRigById(tanker.getRigId());
-            if (rig == null) {
+            Rig rigFromDB = rigService.getRigById(tankerFromDB.getRigId());
+            Rig newRig = rigService.getRigById(tanker.getRigId());
+
+            if (newRig == null) {
                 return null;
             }
-            rig.getTankers().remove(tankerFromDB);
-            rig.getTankers().add(tanker);
 
-            tanker.setRig(rig);
-            tanker.setRigId(rig.getId());
+            if (rigFromDB != null) {
+                rigFromDB.getTankers().remove(tankerFromDB);
+            }
+
+            newRig.getTankers().add(tanker);
+
+            tanker.setRig(newRig);
+            tanker.setRigId(newRig.getId());
 
             EntityReader.updateEntityInCsv(tanker);
 
@@ -95,6 +101,12 @@ public class TankerService {
         if (tanker != null) {
             entitiesMap.get(Tanker.class).remove(tanker);
             EntityReader.deleteEntityFromCSV(tanker);
+
+            Rig rig = rigService.getRigById(tanker.getRigId());
+            if (rig != null) {
+                rig.getTankers().remove(tanker);
+            }
+
             return true;
         } else {
             return false;
