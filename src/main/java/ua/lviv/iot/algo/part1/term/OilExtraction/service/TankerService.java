@@ -16,28 +16,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TankerService {
 
     private final RigService rigService;
+    private final Map<Class<? extends Entity>, List<Entity>> entitiesMap;
+    private final AtomicInteger idCounter;
 
     @Autowired
     public TankerService(final RigService rigService) {
         this.rigService = rigService;
         this.entitiesMap = EntityReader.readEntities();
+        this.idCounter = new AtomicInteger(EntityReader.getLastId(Tanker.class));
     }
 
-    private final Map<Class<? extends Entity>, List<Entity>> entitiesMap;
-    private final AtomicInteger idCounter = new AtomicInteger(
-            EntityReader.getLastId(Tanker.class)
-    );
 
     public final List<? extends Entity> getTankers() {
-        List<Entity> tankerList = entitiesMap.get(Tanker.class);
-        if (tankerList != null) {
-            for (Entity entity : tankerList) {
-                if (entity instanceof Tanker) {
-                    Tanker tanker = (Tanker) entity;
-                    Rig rig = rigService.getRigById(tanker.getRigId());
-                    if (rig != null) {
-                        tanker.setRig(rig);
-                    }
+        List<Entity> tankerList = entitiesMap.getOrDefault(Tanker.class, new ArrayList<>());
+        for (Entity entity : tankerList) {
+            if (entity instanceof Tanker tanker) {
+                Rig rig = rigService.getRigById(tanker.getRigId());
+                if (rig != null) {
+                    tanker.setRig(rig);
                 }
             }
         }
@@ -53,11 +49,7 @@ public class TankerService {
             tanker.setRigId(rig.getId());
             EntityWriter.writeToCSV(tanker, path);
             rig.getTankers().add(tanker);
-            if (!entitiesMap.containsKey(Tanker.class)) {
-                entitiesMap.put(Tanker.class, new LinkedList<>());
-            } else {
-                entitiesMap.get(Tanker.class).add(tanker);
-            }
+            entitiesMap.computeIfAbsent(Tanker.class, k -> new LinkedList<>()).add(tanker);
             return tanker;
         } else {
             return null;
@@ -65,9 +57,8 @@ public class TankerService {
     }
 
     public final Tanker getTankerById(final Integer id) {
-
-        return (Tanker) entitiesMap
-                .get(Tanker.class)
+        return (Tanker) entitiesMap.getOrDefault(
+                Tanker.class, new ArrayList<>())
                 .stream()
                 .filter(tanker -> tanker.getId().equals(id))
                 .findFirst()
@@ -78,12 +69,10 @@ public class TankerService {
         Tanker tankerFromDB = getTankerById(id);
         if (tankerFromDB != null) {
             tanker.setId(id);
-
             entitiesMap.get(Tanker.class).remove(tankerFromDB);
             entitiesMap.get(Tanker.class).add(tanker);
 
             Rig rig = rigService.getRigById(tanker.getRigId());
-
             if (rig == null) {
                 return null;
             }
@@ -105,7 +94,6 @@ public class TankerService {
         Tanker tanker = getTankerById(id);
         if (tanker != null) {
             entitiesMap.get(Tanker.class).remove(tanker);
-
             EntityReader.deleteEntityFromCSV(tanker);
             return true;
         } else {
