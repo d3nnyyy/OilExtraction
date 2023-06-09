@@ -69,9 +69,16 @@ public class RigService {
         Rig rigFromDB = getRigById(id);
         if (rigFromDB != null) {
             rig.setId(id);
+            Set<Tanker> tankersToUpdate = rigFromDB.getTankers();
+            for (Tanker tanker : tankersToUpdate) {
+                tanker.setRig(rig);
+            }
             entitiesMap.get(Rig.class).remove(rigFromDB);
             entitiesMap.get(Rig.class).add(rig);
             EntityReader.updateEntityInCsv(rig, PATH);
+            for (Tanker tanker : tankersToUpdate) {
+                EntityReader.updateEntityInCsv(tanker, PATH);
+            }
             return rig;
         } else {
             return null;
