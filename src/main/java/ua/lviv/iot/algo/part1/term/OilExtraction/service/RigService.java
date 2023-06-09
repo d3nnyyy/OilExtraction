@@ -83,22 +83,11 @@ public class RigService {
             entitiesMap.get(Rig.class).remove(rig);
             EntityReader.deleteEntityFromCSV(rig);
 
-            //hm, can't u just rig.getTankers().forEach(tanker -> tanker.setRig(null))?
             rig.getTankers().forEach(tanker -> {
                 tanker.setRig(null);
                 tanker.setRigId(0);
                 EntityReader.updateEntityInCsv(tanker);
             });
-
-//            List<Entity> tankerList = entitiesMap.getOrDefault(Tanker.class, new ArrayList<>());
-//            for (Entity entity : tankerList) {
-//                if (entity instanceof Tanker tanker) {
-//                    if (tanker.getRigId() == id) {
-//                        tanker.setRig(null);
-//                        EntityReader.updateEntityInCsv(tanker);
-//                    }
-//                }
-//            }
 
             return true;
         } else {
