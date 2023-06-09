@@ -1,5 +1,6 @@
 package ua.lviv.iot.algo.part1.term.OilExtraction.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.lviv.iot.algo.part1.term.OilExtraction.fileManagers.EntityReader;
 import ua.lviv.iot.algo.part1.term.OilExtraction.fileManagers.EntityWriter;
@@ -17,6 +18,7 @@ public class RigService {
     private final Map<Class<? extends Entity>, List<Entity>> entitiesMap;
     private final AtomicInteger idCounter;
 
+    @Autowired
     public RigService() {
         this.entitiesMap = EntityReader.readEntities();
         this.idCounter = new AtomicInteger(EntityReader.getLastId(Rig.class));
@@ -80,6 +82,24 @@ public class RigService {
         if (rig != null) {
             entitiesMap.get(Rig.class).remove(rig);
             EntityReader.deleteEntityFromCSV(rig);
+
+            //hm, can't u just rig.getTankers().forEach(tanker -> tanker.setRig(null))?
+            rig.getTankers().forEach(tanker -> {
+                tanker.setRig(null);
+                tanker.setRigId(0);
+                EntityReader.updateEntityInCsv(tanker);
+            });
+
+//            List<Entity> tankerList = entitiesMap.getOrDefault(Tanker.class, new ArrayList<>());
+//            for (Entity entity : tankerList) {
+//                if (entity instanceof Tanker tanker) {
+//                    if (tanker.getRigId() == id) {
+//                        tanker.setRig(null);
+//                        EntityReader.updateEntityInCsv(tanker);
+//                    }
+//                }
+//            }
+
             return true;
         } else {
             return false;
