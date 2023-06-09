@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class TankerService {
 
+    private static final String PATH = "src/main/resources/entities/";
     private final RigService rigService;
     private final Map<Class<? extends Entity>, List<Entity>> entitiesMap;
     private final AtomicInteger idCounter;
@@ -22,8 +23,8 @@ public class TankerService {
     @Autowired
     public TankerService(final RigService rigService) {
         this.rigService = rigService;
-        this.entitiesMap = EntityReader.readEntities();
-        this.idCounter = new AtomicInteger(EntityReader.getLastId(Tanker.class));
+        this.entitiesMap = EntityReader.readEntities(PATH);
+        this.idCounter = new AtomicInteger(EntityReader.getLastId(Tanker.class, PATH));
     }
 
 
@@ -88,7 +89,7 @@ public class TankerService {
             tanker.setRig(newRig);
             tanker.setRigId(newRig.getId());
 
-            EntityReader.updateEntityInCsv(tanker);
+            EntityReader.updateEntityInCsv(tanker, PATH);
 
             return tanker;
         } else {
@@ -100,7 +101,7 @@ public class TankerService {
         Tanker tanker = getTankerById(id);
         if (tanker != null) {
             entitiesMap.get(Tanker.class).remove(tanker);
-            EntityReader.deleteEntityFromCSV(tanker);
+            EntityReader.deleteEntityFromCSV(tanker, PATH);
 
             Rig rig = rigService.getRigById(tanker.getRigId());
             if (rig != null) {

@@ -18,15 +18,13 @@ import java.util.*;
 @Component
 public class EntityReader {
 
-    private static final String PATH = "src/main/resources/entities/";
-
-    public static Map<Class<? extends Entity>, List<Entity>> readEntities() {
+    public static Map<Class<? extends Entity>, List<Entity>> readEntities(final String path) {
         Map<Class<? extends Entity>, List<Entity>> entityMap = new HashMap<>();
 
-        for (var csvFile : FilePathManager.getFilesCreatedInThisMonth(getFilesFromDirectory())) {
+        for (var csvFile : FilePathManager.getFilesCreatedInThisMonth(getFilesFromDirectory(path))) {
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(PATH + csvFile),
+                            new FileInputStream(path + csvFile),
                             StandardCharsets.UTF_8))) {
 
                 String line = br.readLine();
@@ -59,8 +57,8 @@ public class EntityReader {
         return entityMap;
     }
 
-    public static List<String> getFilesFromDirectory() {
-        File folder = new File(EntityReader.PATH);
+    public static List<String> getFilesFromDirectory(final String path) {
+        File folder = new File(path);
         String[] fileNames = folder.list();
         assert fileNames != null;
         return Arrays.asList(fileNames);
@@ -151,8 +149,8 @@ public class EntityReader {
         return value;
     }
 
-    public static int getLastId(final Class<? extends Entity> entityClass) {
-        List<String> files = getFilesFromDirectory();
+    public static int getLastId(final Class<? extends Entity> entityClass, final String path) {
+        List<String> files = getFilesFromDirectory(path);
         int maxId = 0;
 
         for (String file : files) {
@@ -160,7 +158,7 @@ public class EntityReader {
 
             assert csvEntityClass != null;
             if (csvEntityClass.equals(entityClass)) {
-                try (BufferedReader br = new BufferedReader(new FileReader(PATH + file))) {
+                try (BufferedReader br = new BufferedReader(new FileReader(path + file))) {
                     String line;
                     br.readLine();
                     while ((line = br.readLine()) != null) {
@@ -180,13 +178,13 @@ public class EntityReader {
         return maxId;
     }
 
-    public static void deleteEntityFromCSV(final Entity entity) {
-        List<String> files = getFilesFromDirectory();
+    public static void deleteEntityFromCSV(final Entity entity, final String pathToDeletedFile) {
+        List<String> files = getFilesFromDirectory(pathToDeletedFile);
         for (String file : files) {
             Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
 
             if (csvEntityClass == entity.getClass()) {
-                Path path = Paths.get(PATH + file);
+                Path path = Paths.get(pathToDeletedFile + file);
                 List<String> lines;
                 String headerLine;
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8))) {
@@ -210,13 +208,13 @@ public class EntityReader {
         }
     }
 
-    public static void updateEntityInCsv(final Entity entity) {
-        List<String> files = getFilesFromDirectory();
+    public static void updateEntityInCsv(final Entity entity, final String pathToUpdatedFile) {
+        List<String> files = getFilesFromDirectory(pathToUpdatedFile);
         for (String file : files) {
             Class<? extends Entity> csvEntityClass = getClassByCsvFile(file);
 
             if (csvEntityClass == entity.getClass()) {
-                Path path = Paths.get(PATH + file);
+                Path path = Paths.get(pathToUpdatedFile + file);
                 List<String> lines;
                 String headerLine;
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8))) {
