@@ -59,7 +59,7 @@ public class TankerTest {
         Assertions.assertEquals(500, tanker.getCapacityInBarrels());
         Assertions.assertEquals(250, tanker.getCurrentLoadInBarrels());
         Assertions.assertEquals(datesOfDeparture, tanker.getDatesOfDeparture());
-        Assertions.assertEquals(0, tanker.getRigId());
+        Assertions.assertEquals(1, tanker.getRigId());
     }
 
     @Test
