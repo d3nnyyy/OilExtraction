@@ -91,7 +91,6 @@ public class EntityReader {
                 Field field = getFieldByName(fields, header);
                 if (field != null) {
                     field.setAccessible(true);
-                    //field.set(entity, convertValueToFieldType(value, field.getType()));
                     if (field.getName().equals("rigId")) {
                         if (entity instanceof Tanker) {
                             int rigId = Integer.parseInt(value);
@@ -208,6 +207,7 @@ public class EntityReader {
         }
     }
 
+
     public static void updateEntityInCsv(final Entity entity, final String pathToUpdatedFile) {
         List<String> files = getFilesFromDirectory(pathToUpdatedFile);
         for (String file : files) {
@@ -226,30 +226,7 @@ public class EntityReader {
                         if (values.length > 0 && Integer.parseInt(values[0]) != entity.getId()) {
                             lines.add(line);
                         } else if (values.length > 0 && Integer.parseInt(values[0]) == entity.getId()) {
-
-                            StringBuilder sb = new StringBuilder();
-
-                            String[] headers = headerLine.split(";");
-                            Field[] fields = entity.getClass().getDeclaredFields();
-                            for (int i = 0; i < headers.length; i++) {
-                                String header = headers[i];
-                                for (Field field : fields) {
-                                    field.setAccessible(true);
-                                    if (field.getName().equals(header)) {
-                                        Object value = field.get(entity);
-                                        sb.append(value);
-                                        if (i < headers.length - 1) {
-                                            sb.append(";");
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-
-
-                            String updatedLine = sb.toString();
-                            lines.add(updatedLine);
-
+                            updateValues(entity, lines, headerLine);
                         }
 
                     }
@@ -265,10 +242,37 @@ public class EntityReader {
         }
     }
 
+    private static void updateValues(Entity entity, List<String> lines, String headerLine) throws IllegalAccessException {
+        StringBuilder sb = new StringBuilder();
+
+        String[] headers = headerLine.split(";");
+        Field[] fields = entity.getClass().getDeclaredFields();
+        for (int i = 0; i < headers.length; i++) {
+            String header = headers[i];
+            for (Field field : fields) {
+                field.setAccessible(true);
+                if (field.getName().equals(header)) {
+                    Object value = field.get(entity);
+                    sb.append(value);
+                    if (i < headers.length - 1) {
+                        sb.append(";");
+                    }
+                    break;
+                }
+            }
+        }
+
+
+        String updatedLine = sb.toString();
+        lines.add(updatedLine);
+    }
+
     private static void overwriteCSV(final Path path,
                                      final List<String> lines,
                                      final String headerLine) {
-        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile()), StandardCharsets.UTF_8))) {
+        try (BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(path.toFile()), StandardCharsets.UTF_8))) {
             bw.write(headerLine);
             bw.newLine();
             for (String line : lines) {
