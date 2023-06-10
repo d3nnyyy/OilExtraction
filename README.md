@@ -40,7 +40,9 @@ mvn spring-boot:run
 
 ## Usage
 
-The following endpoints are available for interacting with the system:
+You can interact with the Oil Extraction System using API endpoints. You can test these endpoints using a tool like [Postman](https://www.postman.com/). Here are the available endpoints:
+
+### Rigs
 
 - `GET /rigs`: Retrieve a list of all rigs.
 - `GET /rigs/{id}`: Retrieve a specific rig by ID.
@@ -57,7 +59,7 @@ The following endpoints are available for interacting with the system:
 - `PUT /tankers/{id}`: Update an existing tanker.
 - `DELETE /tankers/{id}`: Delete a tanker by ID.
 
-Refer to the API documentation for detailed information on the request and response formats.
+Make sure to include the necessary request parameters and provide the required data in the request body for creating and updating rigs or tankers. Refer to the API documentation for detailed information on the request and response formats.
 
 ## Data Persistence
 
