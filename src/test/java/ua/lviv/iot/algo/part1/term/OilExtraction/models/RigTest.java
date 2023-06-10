@@ -1,11 +1,8 @@
 package ua.lviv.iot.algo.part1.term.OilExtraction.models;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ua.lviv.iot.algo.part1.term.OilExtraction.models.Rig;
-import ua.lviv.iot.algo.part1.term.OilExtraction.models.Tanker;
 
 import java.util.HashSet;
 import java.util.Set;
