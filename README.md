@@ -23,18 +23,23 @@ To run the Oil Extraction System locally, follow these steps:
 
 1. Clone the repository:
 
+```bash
 git clone https://github.com/d3nnyyy/OilExtraction.git
+```
 
 2. Open the project in your preferred IDE.
 
 3. Build the project using Maven:
 
+```bash
 mvn clean install
+```
 
 4. Run the application:
 
+```bash
 mvn spring-boot:run
-
+```
 
 5. The application will start running on `http://localhost:8080`.
 
